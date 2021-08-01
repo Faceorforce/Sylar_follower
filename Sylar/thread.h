@@ -16,7 +16,7 @@ namespace sylar
         THread(std::function<void()> cb, const std::string &name);
         ~Thread();
 
-        tid_t getId() const { return m_id; }
+        pid_t getId() const { return p_id; }
         const std::string &getName() const { return m_name; }
 
         void join();
@@ -30,9 +30,10 @@ namespace sylar
         Thread &operator=(const Thread &) = delete;
 
     private:
-        tid_t m_id;
-        pthread_t m_thread;
+        pid_t m_id = -1;
+        pthread_t m_thread = 0;
         std::function<void()> m_cb;
         std::string m_name;
     };
 }
+#endif;
