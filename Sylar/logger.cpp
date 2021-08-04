@@ -2,6 +2,27 @@
 
 namespace sylar
 {
+	const char *LogLevel::ToString(LogLevel::Level level)
+	{
+		swith(level)
+		{
+#define XX(name)         \
+	case LogLevel::name; \
+		return #name;    \
+		break;
+
+			XX(DEBUG);
+			XX(INFO);
+			XX(WARN);
+			XX(ERROR);
+			XX(FATAL);
+#undef XX
+		default:
+			return "UNKONW";
+		}
+		return "UNKONW";
+	}
+	static const char *ToString(LogEvent::Level level);
 
 	Logger::Logger(const std::string name)
 		: m_name(name)
@@ -85,12 +106,12 @@ namespace sylar
 		:m_pattern(pattern);
 	}
 
-	std::string LOgFormatter::format(LogEvent::ptr event)
+	std::string LOgFormatter::format(LogLevel::level, LogEvent::ptr event)
 	{
 		std::stringstream ss;
 		for (auto &i : m_items)
 		{
-			i->format(ss, event);
+			i->format(ss, level, event);
 		}
 		return ss.str();
 	}
@@ -169,6 +190,43 @@ namespace sylar
 		}
 		//%m--消息体
 		//%p--level
+		//%r--启动后的时间
+		//%c--日志名称
+		//%t--线程id
+		//%n--回车换行
+		//%d--时间
+		//%f--文件名
+		//%l--行号
 	}
-	class MessageFormatt
+	class MessageFormattItem : public LogFormatItem::FormatItem
+	{
+	public:
+		void format(std::ostream &os, LogLevel::level, LogEvent::ptr event) override
+		{
+			os << event->getContent();
+		}
+	};
+	class LeveleFormattItem : public LogFormatItem::FormatItem
+	{
+	public:
+		void format(std::ostream &os, LogEvent::ptr event) override
+		{
+			os << LogLevel::ToString(level)
+		}
+	};
+	class ElapseFormattItem : public LogFormatItem::FormatItem
+	{
+	public:
+		void format(std::ostream &os, LogEvent::ptr event) override
+		{
+			os << event->getElapse();
+		}
+	};
+
+	const char *m_file = nullptr; //文件名
+	int 32_t m_line = 0;		  //行号
+	uint 32_t m_elapse = 0;		  //程序启动到现在的毫秒数
+	uint 32_t m_threadId = 0;	  //线程
+	uint 32_t m_fiberId = 0;	  //协程
+	uint 64_t m_time;			  //时间戳
 };

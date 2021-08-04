@@ -16,13 +16,21 @@ namespace Sylar
         typedef std::shared_ptr<LogEvent> ptr;
         LogEvent();
 
+        const char *getFile() const { return m_file; }
+        int32_t getLine() const { return m_line; }
+        uint32_t getElapse() const { return m_elapse; }
+        uint32_t getThreadId() const { return m_treadId; }
+        uint32_t getFiberId() const { return m_fiberId; }
+        uint64_t getTime() const { return m_time; }
+        const std::string &getContent() const { return m_content; }
+
     private:
         const char *m_file = nullptr;
         int 32_t m_line = 0;
         uint 32_t m_elapse = 0;   //程序启动到现在的毫秒数
         uint 32_t m_threadId = 0; //线程
         uint 32_t m_fiberId = 0;  //协程
-        uint 64_t m_time;
+        uint 64_t m_time;         //时间戳
         std::string m_content;
     };
     //日志级别
@@ -31,11 +39,14 @@ namespace Sylar
     public:
         enum Level
         {
-            DEBUGGER 1;
-            INFO 2;
-            WARN 3 ERROR 4;
-            FATAL 5;
+            UNKONW = 0,
+            DEBUGGER = 1,
+            INFO = 2,
+            WARN = 3,
+            ERROR = 4,
+            FATAL = 5
         };
+        static const char *ToString(LogEvent::Level level);
     };
     //日志格式器
     class LogFormatter
@@ -45,15 +56,16 @@ namespace Sylar
         LogFormatter{const std::string & pattern}
         //
         std::string
-        format(LogFormatter::ptr event);
+            std::string
+            fromate(LogLevel::Level level, LogEvent::ptr event);
 
-    private:
+    public:
         class FormatItem
         {
         public:
             typedef std::shared_ptr<FormatItem> ptr;
             virtual ~FormatItem{};
-            virtual void format(std::ostream &, LogEvent::ptr event) = 0;
+            virtual void format(std::ostream &os, LogLevel::Level, LogEvent::ptr event) = 0;
         };
         void init();
 
